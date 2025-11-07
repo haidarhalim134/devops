@@ -2,6 +2,9 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { db, users } from "@/db";
 import { eq } from "drizzle-orm";
+import { NextRequest } from "next/server";
+import { cookieName, secret } from "../../middleware";
+import { jwtVerify } from "jose";
 
 
 export const registerSchema = z.object({
@@ -27,4 +30,25 @@ export async function verifyUser(email: string, password: string) {
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return null;
     return user;
+}
+
+
+
+export async function verifyAdmin(req: NextRequest) {
+    const jwt = req.cookies.get(cookieName)?.value;
+
+    if (!jwt) {
+        return null
+    }
+
+    try {
+        const { payload } = await jwtVerify(jwt, secret);
+        return {
+            userId: payload.userId as string,
+            email: payload.email as string,
+        };
+
+    } catch (error) {
+        return null
+    }
 }

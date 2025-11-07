@@ -1,20 +1,9 @@
 "use client";
-
-import { useState, useEffect } from "react";
-import { Briefcase, MapPin, Clock, Trash2, Pencil, Plus } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { Trash, Pen, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
 
-// ---------- Types ----------
 interface Job {
   id: number;
   title: string;
@@ -24,265 +13,206 @@ interface Job {
   description: string;
 }
 
-// ---------- Main Page ----------
 export default function CareersPage() {
-  const [jobs, setJobs] = useState<Job[]>([
-    {
-      id: 1,
-      title: "Frontend Developer",
-      department: "Engineering",
-      location: "Remote",
-      type: "Full-time",
-      description:
-        "Build modern and responsive web interfaces using React, Next.js, and Tailwind CSS.",
-    },
-    {
-      id: 2,
-      title: "UI/UX Designer",
-      department: "Design",
-      location: "San Francisco, CA",
-      type: "Hybrid",
-      description:
-        "Design user-centric interfaces and contribute to brand design systems.",
-    },
-  ]);
-
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [editDialog, setEditDialog] = useState(false);
-  const [createDialog, setCreateDialog] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // ---------- Check for admin cookie ----------
-//   useEffect(() => {
-//     const isAdminCookie = document.cookie.includes("admin=true");
-//     setIsAdmin(isAdminCookie);
-//   }, []);
-    useEffect(() => {
-        fetch("/api/auth/verify")
-        .then((res) => res.json())
-        .then((data) => setIsAdmin(data.isAdmin));
-    }, []);
+  useEffect(() => {
+    fetch("/api/auth/verify")
+      .then((res) => res.json())
+      .then((data) => setIsAdmin(data.isAdmin));
+  }, []);
 
-  // ---------- Handlers ----------
-  const handleDelete = (id: number) => {
+  useEffect(() => {
+    fetch("/api/jobs")
+      .then((res) => res.json())
+      .then((data) => setJobs(data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function deleteJob(id: number) {
+    if (!confirm("Are you sure you want to delete this job?")) return;
+    await fetch(`/api/jobs/${id}`, { method: "DELETE" });
     setJobs((prev) => prev.filter((job) => job.id !== id));
-  };
+  }
 
-  const handleEditOpen = (job: Job) => {
-    setSelectedJob(job);
-    setEditDialog(true);
-  };
-
-  const handleEditSave = () => {
-    if (selectedJob) {
-      setJobs((prev) =>
-        prev.map((job) => (job.id === selectedJob.id ? selectedJob : job))
-      );
-      setEditDialog(false);
-    }
-  };
-
-  const handleCreateSave = () => {
-    if (selectedJob) {
-      const newJob = { ...selectedJob, id: Date.now() };
+  async function addJob(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const body = Object.fromEntries(formData.entries());
+    const res = await fetch("/api/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      const newJob = await res.json();
       setJobs((prev) => [...prev, newJob]);
-      setCreateDialog(false);
+      setShowDialog(false);
+      e.currentTarget.reset();
     }
-  };
+  }
+
+  async function updateJob(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editingJob) return;
+    const formData = new FormData(e.currentTarget);
+    const body = Object.fromEntries(formData.entries());
+    const res = await fetch(`/api/jobs/${editingJob.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setJobs((prev) =>
+        prev.map((job) => (job.id === updated.id ? updated : job))
+      );
+      setEditingJob(null);
+      setShowDialog(false);
+    }
+  }
+
+  function handleEdit(job: Job) {
+    setEditingJob(job);
+    setShowDialog(true);
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 py-16 px-6 relative">
-      {/* Header */}
-      <section className="max-w-5xl mx-auto text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4 transition-all duration-300">
-          Join Our Team
-        </h1>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          We’re always looking for talented people to grow with us. Explore open
-          roles and become part of a passionate team shaping the future.
-        </p>
-      </section>
+      <h1 className="text-4xl font-bold text-center mb-8">Join Our Team</h1>
 
-      {/* Job Cards */}
-      <section className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {jobs.map((job) => (
-          <div
-            key={job.id}
-            className="transform transition-all duration-300 hover:-translate-y-1"
-          >
-            <Card className="h-full hover:shadow-lg transition-shadow relative">
-              {isAdmin && (
-                <div className="absolute top-3 right-3 flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleEditOpen(job)}
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
+        </div>
+      ) : (
+        <section className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {jobs.map((job) => (
+            <Card key={job.id} className="relative hover:shadow-md">
+              <CardContent className="p-6 flex flex-col h-full">
+                {isAdmin && (
+                  <div className="absolute top-3 right-3 flex gap-2">
+                    <button
+                      onClick={() => deleteJob(job.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleEdit(job)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <Pen size={18} />
+                    </button>
+                  </div>
+                )}
+                <h3 className="text-xl font-semibold mb-2">{job.title}</h3>
+                <p className="text-sm text-gray-500 mb-2">{job.department}</p>
+                <p className="text-gray-600 text-sm mb-4 flex-grow">{job.description}</p>
+                <div className="text-sm text-gray-500 mb-4">
+                  {job.location} • {job.type}
+                </div>
+
+                <Button
+                  asChild
+                  className="mt-auto bg-indigo-600 hover:bg-indigo-700 text-white"
+                >
+                  <a
+                    href={`mailto:workemail@email.com?subject=Application for ${encodeURIComponent(
+                      job.title
+                    )}`}
                   >
-                    <Pencil size={16} />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    onClick={() => handleDelete(job.id)}
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                </div>
-              )}
-
-              <CardContent className="p-6 flex flex-col justify-between h-full">
-                <div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900">
-                    {job.title}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    {job.department}
-                  </p>
-                  <p className="text-gray-600 text-sm mb-4">
-                    {job.description}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between text-gray-500 text-sm mb-4">
-                  <span className="flex items-center gap-1">
-                    <MapPin size={16} /> {job.location}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={16} /> {job.type}
-                  </span>
-                </div>
-
-                <Button className="w-full">
-                  <Briefcase size={16} className="mr-2" /> Apply Now
+                    Apply
+                  </a>
                 </Button>
               </CardContent>
             </Card>
-          </div>
-        ))}
-      </section>
-
-      {/* Floating + Button */}
-      {isAdmin && (
-        <Button
-          size="icon"
-          className="fixed bottom-10 right-10 w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-700 shadow-lg"
-          onClick={() => {
-            setSelectedJob({
-              id: 0,
-              title: "",
-              department: "",
-              location: "",
-              type: "",
-              description: "",
-            });
-            setCreateDialog(true);
-          }}
-        >
-          <Plus size={24} />
-        </Button>
+          ))}
+        </section>
       )}
+      
+      {isAdmin && (
+        <>
+          <button
+            onClick={() => {
+              setEditingJob(null);
+              setShowDialog(true);
+            }}
+            className="fixed bottom-8 right-8 bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700"
+          >
+            <Plus size={24} />
+          </button>
 
-      {/* Edit Dialog */}
-      <Dialog open={editDialog} onOpenChange={setEditDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Job</DialogTitle>
-          </DialogHeader>
-          {selectedJob && (
-            <div className="space-y-3">
-              <Input
-                placeholder="Job Title"
-                value={selectedJob.title}
-                onChange={(e) =>
-                  setSelectedJob({ ...selectedJob, title: e.target.value })
-                }
-              />
-              <Input
-                placeholder="Department"
-                value={selectedJob.department}
-                onChange={(e) =>
-                  setSelectedJob({ ...selectedJob, department: e.target.value })
-                }
-              />
-              <Input
-                placeholder="Location"
-                value={selectedJob.location}
-                onChange={(e) =>
-                  setSelectedJob({ ...selectedJob, location: e.target.value })
-                }
-              />
-              <Input
-                placeholder="Type"
-                value={selectedJob.type}
-                onChange={(e) =>
-                  setSelectedJob({ ...selectedJob, type: e.target.value })
-                }
-              />
-              <Textarea
-                placeholder="Description"
-                value={selectedJob.description}
-                onChange={(e) =>
-                  setSelectedJob({ ...selectedJob, description: e.target.value })
-                }
-              />
+          {showDialog && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <form
+                onSubmit={editingJob ? updateJob : addJob}
+                className="bg-white rounded-xl p-6 w-full max-w-md space-y-4"
+              >
+                <h2 className="text-xl font-semibold mb-4">
+                  {editingJob ? "Edit Job" : "Create Job"}
+                </h2>
+
+                <input
+                  name="title"
+                  placeholder="Job title"
+                  defaultValue={editingJob?.title}
+                  className="w-full border p-2 rounded"
+                  required
+                />
+                <input
+                  name="department"
+                  placeholder="Department"
+                  defaultValue={editingJob?.department}
+                  className="w-full border p-2 rounded"
+                  required
+                />
+                <input
+                  name="location"
+                  placeholder="Location"
+                  defaultValue={editingJob?.location}
+                  className="w-full border p-2 rounded"
+                  required
+                />
+                <input
+                  name="type"
+                  placeholder="Type (Full-time / Part-time)"
+                  defaultValue={editingJob?.type}
+                  className="w-full border p-2 rounded"
+                  required
+                />
+                <textarea
+                  name="description"
+                  placeholder="Description"
+                  defaultValue={editingJob?.description}
+                  className="w-full border p-2 rounded"
+                  required
+                />
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setShowDialog(false);
+                      setEditingJob(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    {editingJob ? "Update" : "Create"}
+                  </Button>
+                </div>
+              </form>
             </div>
           )}
-          <DialogFooter>
-            <Button onClick={handleEditSave}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Create Dialog */}
-      <Dialog open={createDialog} onOpenChange={setCreateDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Job</DialogTitle>
-          </DialogHeader>
-          {selectedJob && (
-            <div className="space-y-3">
-              <Input
-                placeholder="Job Title"
-                value={selectedJob.title}
-                onChange={(e) =>
-                  setSelectedJob({ ...selectedJob, title: e.target.value })
-                }
-              />
-              <Input
-                placeholder="Department"
-                value={selectedJob.department}
-                onChange={(e) =>
-                  setSelectedJob({ ...selectedJob, department: e.target.value })
-                }
-              />
-              <Input
-                placeholder="Location"
-                value={selectedJob.location}
-                onChange={(e) =>
-                  setSelectedJob({ ...selectedJob, location: e.target.value })
-                }
-              />
-              <Input
-                placeholder="Type"
-                value={selectedJob.type}
-                onChange={(e) =>
-                  setSelectedJob({ ...selectedJob, type: e.target.value })
-                }
-              />
-              <Textarea
-                placeholder="Description"
-                value={selectedJob.description}
-                onChange={(e) =>
-                  setSelectedJob({ ...selectedJob, description: e.target.value })
-                }
-              />
-            </div>
-          )}
-          <DialogFooter>
-            <Button onClick={handleCreateSave}>Create Job</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </>
+      )}
     </main>
   );
 }
