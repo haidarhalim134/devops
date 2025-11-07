@@ -3,8 +3,8 @@ import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
 
-const cookieName = "session";
-const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+export const cookieName = "session";
+export const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
 
 export async function middleware(req: NextRequest) {
