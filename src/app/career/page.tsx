@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Trash, Pen, Plus, Loader2 } from "lucide-react"; // 👈 added Loader2
+import { Trash, Pen, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -18,21 +18,19 @@ export default function CareersPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
-  const [loading, setLoading] = useState(true); // 👈 new state
+  const [loading, setLoading] = useState(true);
 
-  // Fetch admin status
   useEffect(() => {
     fetch("/api/auth/verify")
       .then((res) => res.json())
       .then((data) => setIsAdmin(data.isAdmin));
   }, []);
 
-  // Fetch jobs
   useEffect(() => {
     fetch("/api/jobs")
       .then((res) => res.json())
       .then((data) => setJobs(data))
-      .finally(() => setLoading(false)); // 👈 hide spinner once done
+      .finally(() => setLoading(false));
   }, []);
 
   async function deleteJob(id: number) {
@@ -87,7 +85,6 @@ export default function CareersPage() {
     <main className="min-h-screen bg-gray-50 py-16 px-6 relative">
       <h1 className="text-4xl font-bold text-center mb-8">Join Our Team</h1>
 
-      {/* 👇 Loading Spinner */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
@@ -96,7 +93,7 @@ export default function CareersPage() {
         <section className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobs.map((job) => (
             <Card key={job.id} className="relative hover:shadow-md">
-              <CardContent className="p-6">
+              <CardContent className="p-6 flex flex-col h-full">
                 {isAdmin && (
                   <div className="absolute top-3 right-3 flex gap-2">
                     <button
@@ -115,17 +112,29 @@ export default function CareersPage() {
                 )}
                 <h3 className="text-xl font-semibold mb-2">{job.title}</h3>
                 <p className="text-sm text-gray-500 mb-2">{job.department}</p>
-                <p className="text-gray-600 text-sm mb-4">{job.description}</p>
-                <div className="text-sm text-gray-500">
+                <p className="text-gray-600 text-sm mb-4 flex-grow">{job.description}</p>
+                <div className="text-sm text-gray-500 mb-4">
                   {job.location} • {job.type}
                 </div>
+
+                <Button
+                  asChild
+                  className="mt-auto bg-indigo-600 hover:bg-indigo-700 text-white"
+                >
+                  <a
+                    href={`mailto:workemail@email.com?subject=Application for ${encodeURIComponent(
+                      job.title
+                    )}`}
+                  >
+                    Apply
+                  </a>
+                </Button>
               </CardContent>
             </Card>
           ))}
         </section>
       )}
-
-      {/* 👇 Admin floating button + dialog stays the same */}
+      
       {isAdmin && (
         <>
           <button
