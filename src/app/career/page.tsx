@@ -118,7 +118,6 @@ export default function CareersPage() {
                 </div>
 
                 <Button
-                  asChild
                   className="mt-auto bg-indigo-600 hover:bg-indigo-700 text-white"
                 >
                   <a
@@ -134,7 +133,7 @@ export default function CareersPage() {
           ))}
         </section>
       )}
-      
+
       {isAdmin && (
         <>
           <button
