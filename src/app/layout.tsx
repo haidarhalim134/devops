@@ -3,7 +3,6 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { getSession } from "@/lib/cookies";
 
-
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const session = await getSession();
   return (
@@ -11,11 +10,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body className="min-h-screen bg-gray-50">
         <header className="border-b bg-white">
           <nav className="mx-auto flex max-w-5xl items-center justify-between p-4">
-            <Link href="/" className="font-semibold">Next + Drizzle Custom Auth</Link>
+            <Link href="/" className="font-semibold">
+              Next + Drizzle Custom Auth
+            </Link>
             <div className="space-x-3 text-sm">
               {session ? (
                 <>
-                  <Link href="/dashboard">Dashboard</Link>
+                  <Link href="/login">Dashboard</Link>
                   <form action="/api/auth/logout" method="post" className="inline">
                     <button className="rounded-lg border px-3 py-1">Sign out</button>
                   </form>
@@ -23,7 +24,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               ) : (
                 <>
                   <Link href="/login">Login</Link>
-                  <Link href="/register" className="rounded-lg border px-3 py-1">Register</Link>
+                  <Link href="/register" className="rounded-lg border px-3 py-1">
+                    Register
+                  </Link>
                 </>
               )}
             </div>
