@@ -3,6 +3,8 @@ import { desc, eq } from "drizzle-orm";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
+import { BlogActions } from "@/components/BlogActions";
+import { FileText } from "lucide-react";
 
 async function getBlogs() {
     const allBlogs = await db
@@ -37,7 +39,7 @@ export default async function BlogsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {allBlogs.map((blog) => (
                     <Card key={blog.id} className="flex flex-col hover:shadow-lg transition-shadow">
-                        {blog.imageUrl && (
+                        {blog.imageUrl ? (
                             <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
                                 <Image
                                     src={blog.imageUrl}
@@ -45,6 +47,10 @@ export default async function BlogsPage() {
                                     fill
                                     className="object-cover"
                                 />
+                            </div>
+                        ) : (
+                            <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-muted flex items-center justify-center">
+                                <FileText className="w-16 h-16 text-muted-foreground/40" />
                             </div>
                         )}
                         <CardHeader>
@@ -79,6 +85,9 @@ export default async function BlogsPage() {
                     <p className="text-muted-foreground text-lg">No blogs found. Check back soon!</p>
                 </div>
             )}
+
+            {/* Floating Action Button - only shown if logged in */}
+            <BlogActions />
         </div>
     );
 }

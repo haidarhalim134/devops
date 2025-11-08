@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { MarkdownContent } from "@/components/MarkdownContent";
+import { FileText } from "lucide-react";
 
 async function getBlog(id: number) {
     const [blog] = await db
@@ -47,7 +49,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
             </Link>
 
             <article className="mt-4">
-                {blog.imageUrl && (
+                {blog.imageUrl ? (
                     <div className="relative w-full h-96 mb-8 rounded-lg overflow-hidden">
                         <Image
                             src={blog.imageUrl}
@@ -56,6 +58,10 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
                             className="object-cover"
                             priority
                         />
+                    </div>
+                ) : (
+                    <div className="relative w-full h-96 mb-8 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                        <FileText className="w-24 h-24 text-muted-foreground/30" />
                     </div>
                 )}
 
@@ -76,11 +82,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
                     </div>
                 </div>
 
-                <div className="prose prose-lg max-w-none dark:prose-invert">
-                    <p className="text-lg leading-relaxed whitespace-pre-wrap">
-                        {blog.content}
-                    </p>
-                </div>
+                <MarkdownContent content={blog.content} />
 
                 {blog.updatedAt && blog.updatedAt !== blog.createdAt && (
                     <p className="text-sm text-muted-foreground mt-8 pt-8 border-t">
