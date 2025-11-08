@@ -21,5 +21,15 @@ export const jobs = pgTable("jobs", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const blogs = pgTable("blogs", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  authorId: uuid("author_id").references(() => users.id).notNull(),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = typeof jobs.$inferInsert;
