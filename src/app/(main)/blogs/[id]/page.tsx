@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MarkdownContent } from "@/components/MarkdownContent";
 import { FileText } from "lucide-react";
+import { BlogDetailActions } from "@/components/BlogDetailActions";
 
 async function getBlog(id: number) {
     const [blog] = await db
@@ -15,6 +16,7 @@ async function getBlog(id: number) {
             imageUrl: blogs.imageUrl,
             createdAt: blogs.createdAt,
             updatedAt: blogs.updatedAt,
+            authorId: blogs.authorId,
             authorName: users.name,
             authorEmail: users.email,
         })
@@ -66,6 +68,15 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
                 )}
 
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">{blog.title}</h1>
+
+                {/* Edit and Delete buttons - only shown if user is the author */}
+                <BlogDetailActions
+                    blogId={blog.id}
+                    authorId={blog.authorId}
+                    initialTitle={blog.title}
+                    initialContent={blog.content}
+                    initialImageUrl={blog.imageUrl}
+                />
 
                 <div className="flex items-center gap-4 text-muted-foreground mb-8 pb-8 border-b">
                     <div>
