@@ -2,6 +2,28 @@
 import { Facebook, Instagram, Linkedin } from "lucide-react";
 
 export default function ContactPage() {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+
+    const name = (form[0] as HTMLInputElement).value;
+    const email = (form[1] as HTMLInputElement).value;
+    const message = (form[2] as HTMLTextAreaElement).value;
+
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, message }),
+    });
+
+    if (res.ok) {
+      alert("Pesan berhasil dikirim ✅");
+      form.reset();
+    } else {
+      alert("Terjadi kesalahan ❌");
+    }
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 py-12 px-6">
       <h1 className="text-3xl font-bold text-center mb-8">Kontak Kami</h1>
@@ -14,37 +36,19 @@ export default function ContactPage() {
           <p className="mb-2">📞 <strong>Telepon:</strong> +358 9 2316 4600</p>
           <p className="mb-2">📧 <strong>Email :</strong> parents@supercell.com</p>
 
-
-          {/* Ikon Media Sosial */}
           <div className="flex items-center gap-5 mt-6">
-            <a
-              href="https://www.facebook.com/supercell"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition"
-            >
+            <a href="https://www.facebook.com/supercell" target="_blank" rel="noopener" className="p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition">
               <Facebook size={22} />
             </a>
-            <a
-              href="https://www.instagram.com/supercell/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-3 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 text-white hover:opacity-90 transition"
-            >
+            <a href="https://www.instagram.com/supercell/" target="_blank" rel="noopener" className="p-3 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 text-white hover:opacity-90 transition">
               <Instagram size={22} />
             </a>
-            <a
-              href="https://www.linkedin.com/company/supercell/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-3 rounded-full bg-blue-700 text-white hover:bg-blue-800 transition"
-            >
+            <a href="https://www.linkedin.com/company/supercell/" target="_blank" rel="noopener" className="p-3 rounded-full bg-blue-700 text-white hover:bg-blue-800 transition">
               <Linkedin size={22} />
             </a>
           </div>
         </div>
 
-        {/* Peta Lokasi */}
         <div>
           <iframe
             title="Supercell HQ Map"
@@ -59,7 +63,7 @@ export default function ContactPage() {
       {/* Form Kontak */}
       <section className="max-w-3xl mx-auto mt-12">
         <h2 className="text-xl font-semibold mb-4">Hubungi Kami</h2>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <input type="text" placeholder="Nama" className="w-full border rounded-lg p-2" required />
           <input type="email" placeholder="Email" className="w-full border rounded-lg p-2" required />
           <textarea placeholder="Pesan Anda" className="w-full border rounded-lg p-2 h-32" required />
