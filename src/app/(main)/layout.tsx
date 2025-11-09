@@ -14,6 +14,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <div className="flex items-center gap-6">
             <Link href="/" className="font-semibold">Next + Drizzle Custom Auth</Link>
             <Link href="/contact" className="text-sm">Hubungi Kami</Link>
+            <Link href="/career" className="text-sm">Karir</Link>
             <Link href="/about" className="text-sm">About</Link>
           </div>
 
