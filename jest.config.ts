@@ -199,6 +199,47 @@ const config: Config = {
 
   // Whether to use watchman for file crawling
   // watchman: true,
+
+    // Use projects to set different test environments
+  projects: [
+    {
+      displayName: 'api',
+      testMatch: ['**/__tests__/api/**/*.test.ts'],
+      testEnvironment: 'node',
+      preset: 'ts-jest',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+    },
+    {
+      displayName: 'integration',
+      testMatch: ['**/__tests__/integration/**/*.test.ts'],
+      testEnvironment: 'node',
+      preset: 'ts-jest',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+    },
+    {
+      displayName: 'components',
+      testMatch: ['**/__tests__/components/**/*.tsx', '**/__tests__/*.tsx'],
+      testEnvironment: 'jsdom',
+      preset: 'ts-jest',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      transform: {
+        '^.+\\.tsx?$': ['ts-jest', {
+          tsconfig: {
+            jsx: 'react-jsx',
+          }
+        }]
+      },
+    },
+  ],
 };
 
 export default config;
