@@ -83,6 +83,13 @@ export function AddBlogButton() {
         setLoading(true);
         setError("");
 
+        // Validate required fields
+        if (!formData.title.trim() || !formData.content.trim()) {
+            setError("Title and content are required");
+            setLoading(false);
+            return;
+        }
+
         try {
             const response = await fetch("/api/blogs", {
                 method: "POST",
