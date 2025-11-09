@@ -1,0 +1,43 @@
+import "@/app/globals.css";
+import { ReactNode } from "react";
+import Link from "next/link";
+import { getSession } from "@/lib/cookies";
+
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const session = await getSession();
+  return (
+    <>
+      <header className="border-b bg-white">
+        <nav className="mx-auto flex max-w-5xl items-center justify-between p-4">
+
+          <div className="flex items-center gap-6">
+            <Link href="/" className="font-semibold">Next + Drizzle Custom Auth</Link>
+            <Link href="/contact" className="text-sm">Hubungi Kami</Link>
+            <Link href="/career" className="text-sm">Karir</Link>
+            <Link href="/about" className="text-sm">About</Link>
+          </div>
+
+          <div className="space-x-3 text-sm">
+            {session ? (
+              <>
+                <Link href="/dashboard">Dashboard</Link>
+                <form action="/api/auth/logout" method="post" className="inline">
+                  <button className="rounded-lg border px-3 py-1">Sign out</button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Link href="/login">Login</Link>
+                <Link href="/register" className="rounded-lg border px-3 py-1">Register</Link>
+              </>
+            )}
+          </div>
+
+        </nav>
+      </header>
+
+      <main className="mx-auto max-w-5xl p-4">{children}</main>
+    </>
+  );
+}
