@@ -11,7 +11,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body className="min-h-screen bg-gray-50">
         <header className="border-b bg-white">
           <nav className="mx-auto flex max-w-5xl items-center justify-between p-4">
-            <Link href="/" className="font-semibold">Next + Drizzle Custom Auth</Link>
+            <Link href="/" className="font-semibold">Company</Link>
             <div className="space-x-3 text-sm">
               {session ? (
                 <>
