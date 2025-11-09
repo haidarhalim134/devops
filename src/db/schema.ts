@@ -1,5 +1,6 @@
 import { pgTable, text, timestamp, uuid, varchar, serial } from "drizzle-orm/pg-core";
 
+// --- Tabel Users (Tetap sama) ---
 export const users = pgTable("users", {
     id: uuid("id").defaultRandom().primaryKey(),
     email: text("email").notNull().unique(),
@@ -9,6 +10,7 @@ export const users = pgTable("users", {
     updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
+// --- Tabel Jobs (Tetap sama) ---
 export const jobs = pgTable("jobs", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
@@ -23,7 +25,9 @@ export const jobs = pgTable("jobs", {
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = typeof jobs.$inferInsert;
 
-export const blogsTable = pgTable("blogs", {
+// --- 🚀 PERBAIKAN DI SINI ---
+// Nama variabel 'blogsTable' diubah menjadi 'blogs'
+export const blogs = pgTable("blogs", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 256 }),
   content: text("content"),
@@ -33,15 +37,13 @@ export const blogsTable = pgTable("blogs", {
   updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export type Blog = typeof blogsTable.$inferSelect;
-export type NewBlog = typeof blogsTable.$inferInsert;
+export type Blog = typeof blogs.$inferSelect; // Disesuaikan
+export type NewBlog = typeof blogs.$inferInsert; // Disesuaikan
 
 
-// --- abel Portfolios (Versi Sederhana / Publik) ---
-// Ini adalah versi yang tidak memerlukan login
+// --- Tabel Portfolios (Publik, tanpa userId) ---
 export const portfoliosTable = pgTable("portfolios", {
   id: serial("id").primaryKey(),
-  // Tidak ada 'userId'
   title: varchar("title", { length: 256 }).notNull(),
   description: text("description").notNull(),
   image: varchar("image", { length: 256 }),
