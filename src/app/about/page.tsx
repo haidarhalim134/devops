@@ -1,12 +1,25 @@
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-gray-50 py-16 px-6">
+
+      <section
+        className="relative w-screen h-[500px] left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-cover bg-center"
+        style={{
+          backgroundImage: "url('/images/about/products.png')",
+        }}
+      >
+        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+          <h1 className="text-6xl font-bold text-white tracking-tight">
+            About Us
+          </h1>
+        </div>
+      </section>
+
       <section className="max-w-4xl mx-auto text-center mb-16">
         <h1 className="text-4xl font-bold mb-6 text-gray-900">
-          About SoftwareOne
         </h1>
         <p className="text-gray-700 leading-relaxed text-lg">
-          At SoftwareOne, we go beyond the ordinary—helping businesses transform,
+          We go beyond the ordinary—helping businesses transform,
           innovate, and thrive in the digital age. We believe that technology should
           empower people, not complicate their work. That’s why we specialize in
           modern, scalable cloud and software solutions that maximize value and drive innovation.
