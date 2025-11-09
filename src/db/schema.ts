@@ -51,6 +51,13 @@ export const portfoliosTable = pgTable("portfolios", {
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
 
-// Types untuk Portfolios
-export type Project = typeof portfoliosTable.$inferSelect;
-export type NewProject = typeof portfoliosTable.$inferInsert;
+export const contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+export type Job = typeof jobs.$inferSelect;
+export type NewJob = typeof jobs.$inferInsert;
