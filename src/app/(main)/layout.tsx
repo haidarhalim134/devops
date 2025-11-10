@@ -12,7 +12,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <nav className="mx-auto flex max-w-5xl items-center justify-between p-4">
 
           <div className="flex items-center gap-6">
-            <Link href="/" className="font-semibold">Next + Drizzle Custom Auth</Link>
+            <Link href="/" className="font-semibold">Company</Link>
             <Link href="/contact" className="text-sm">Hubungi Kami</Link>
             <Link href="/career" className="text-sm">Karir</Link>
             <Link href="/about" className="text-sm">About</Link>
