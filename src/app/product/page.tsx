@@ -9,10 +9,10 @@ export type Product = {
   id: number;
   name: string;
   category: string;
-  description: string;
+  description?: string;
   price: number;
   stock: number;
-  image: string;
+  image?: string;
 };
 
 export default function ProductPage() {
@@ -20,69 +20,62 @@ export default function ProductPage() {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [editData, setEditData] = useState<Product | null>(null);
 
+  // 🔹 Ambil data dari API
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/products");
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Data is not in expected format');
+      }
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setProducts([]);
+    }
+  };
+
   useEffect(() => {
-    // Data dummy awal (bisa diganti fetch API)
-    setProducts([
-      {
-        id: 1,
-        name: "Kamera DSLR Canon 600D",
-        category: "Elektronik",
-        description:
-          "Kamera profesional untuk dokumentasi kegiatan atau proyek.",
-        price: 150000,
-        stock: 5,
-        image: "https://images.unsplash.com/photo-1519183071298-a2962eadc7b9",
-      },
-      {
-        id: 2,
-        name: "Tripod Aluminium",
-        category: "Aksesoris Kamera",
-        description: "Tripod ringan dan kokoh, mudah dibawa ke mana saja.",
-        price: 50000,
-        stock: 10,
-        image: "https://images.unsplash.com/photo-1586443004499-43e5c7bd3d8d",
-      },
-      {
-        id: 3,
-        name: "Proyektor Epson XGA",
-        category: "Elektronik",
-        description: "Cocok untuk presentasi, acara, dan kegiatan kampus.",
-        price: 200000,
-        stock: 3,
-        image: "https://images.unsplash.com/photo-1587094312382-e318bd90e3b7",
-      },
-    ]);
+    fetchProducts();
   }, []);
 
-  // Fungsi tambah atau edit produk
-  const handleSave = (product: Omit<Product, "id">) => {
+  // 🔹 Simpan (Create / Update)
+  const handleSave = async (product: Omit<Product, "id">) => {
     if (editData) {
-      // update
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === editData.id ? { ...editData, ...product } : p
-        )
-      );
+      await fetch("/api/products", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...product, id: editData.id }),
+      });
     } else {
-      // create
-      setProducts((prev) => [
-        ...prev,
-        { ...product, id: Date.now() },
-      ]);
+      await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(product),
+      });
     }
     setOpenDialog(false);
     setEditData(null);
+    fetchProducts(); // refresh data
   };
 
-  const handleDelete = (id: number) => {
+  // 🔹 Hapus
+  const handleDelete = async (id: number) => {
     if (confirm("Hapus produk ini?")) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+      await fetch("/api/products", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      fetchProducts();
     }
   };
 
   return (
     <main className="p-8 bg-gray-50 min-h-screen">
-      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">
           Produk & Layanan
@@ -97,7 +90,6 @@ export default function ProductPage() {
         </Button>
       </div>
 
-      {/* Daftar Produk */}
       {products.length === 0 ? (
         <p className="text-gray-500 text-center mt-20">
           Belum ada produk yang tersedia.
@@ -118,7 +110,6 @@ export default function ProductPage() {
         </div>
       )}
 
-      {/* Dialog Form Produk */}
       <ProductFormDialog
         open={openDialog}
         onOpenChange={setOpenDialog}

@@ -17,10 +17,10 @@ export interface Product {
   id?: number;
   name: string;
   category: string;
-  description: string;
+  description?: string;
   price: number;
   stock: number;
-  image: string;
+  image?: string;
 }
 
 interface ProductFormDialogProps {
@@ -39,10 +39,10 @@ export default function ProductFormDialog({
   const [form, setForm] = useState<Product>({
     name: "",
     category: "",
-    description: "",
+    description: undefined,
     price: 0,
     stock: 0,
-    image: "",
+    image: undefined,
   });
 
   useEffect(() => {
