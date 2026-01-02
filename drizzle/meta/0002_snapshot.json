@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "id": "d83c9705-85a4-4327-b79c-523404108c4b",
+=======
+  "id": "f474c0da-2690-4b2d-8747-75c1dbd98650",
+>>>>>>> b1e0f6aaccbb392f4c87abedf5f3e9d54498830f
   "prevId": "1a5e33b1-765f-4b71-8b36-61130d46219e",
   "version": "7",
   "dialect": "postgresql",
@@ -75,6 +79,53 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+<<<<<<< HEAD
+=======
+    "public.contact_messages": {
+      "name": "contact_messages",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+>>>>>>> b1e0f6aaccbb392f4c87abedf5f3e9d54498830f
     "public.jobs": {
       "name": "jobs",
       "schema": "",
@@ -138,6 +189,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+<<<<<<< HEAD
     "public.products": {
       "name": "products",
       "schema": "",
@@ -193,6 +245,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+=======
+>>>>>>> b1e0f6aaccbb392f4c87abedf5f3e9d54498830f
     "public.users": {
       "name": "users",
       "schema": "",
