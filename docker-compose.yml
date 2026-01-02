@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  nextjs-app:
+    image: agoy39/tubes-devops
+    container_name: docker_compose
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    restart: always

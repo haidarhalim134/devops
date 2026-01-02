@@ -1,11 +1,5 @@
-<<<<<<< HEAD
-import { pgTable, text, timestamp, uuid, varchar, serial,integer, numeric } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, varchar, serial,integer} from "drizzle-orm/pg-core";
 
-=======
-import { pgTable, text, timestamp, uuid, varchar, serial } from "drizzle-orm/pg-core";
-
-// --- Tabel Users (Tetap sama) ---
->>>>>>> b1e0f6aaccbb392f4c87abedf5f3e9d54498830f
 export const users = pgTable("users", {
     id: uuid("id").defaultRandom().primaryKey(),
     email: text("email").notNull().unique(),
@@ -77,5 +71,3 @@ export const products = pgTable("products", {
 
 export type products = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
-export type Job = typeof jobs.$inferSelect;
-export type NewJob = typeof jobs.$inferInsert;
