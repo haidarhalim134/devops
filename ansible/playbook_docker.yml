@@ -1,0 +1,51 @@
+- name: Deploy application using Docker Compose on AlmaLinux
+  hosts: vps
+  become: true
+
+  vars:
+    app_dir: /opt/tubes-devops
+
+  tasks:
+    - name: Install required system packages
+      dnf:
+        name:
+          - dnf-plugins-core
+          - curl
+        state: present
+
+    - name: Add Docker official repository
+      command: >
+        dnf config-manager --add-repo
+        https://download.docker.com/linux/centos/docker-ce.repo
+      args:
+        creates: /etc/yum.repos.d/docker-ce.repo
+
+    - name: Install Docker Engine and Compose plugin
+      dnf:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+
+    - name: Copy docker-compose file
+      copy:
+        src: ../docker-compose.yml
+        dest: "{{ app_dir }}/docker-compose.yaml"
+
+    - name: Deploy application using Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}"
+        state: present

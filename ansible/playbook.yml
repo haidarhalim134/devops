@@ -72,7 +72,7 @@
       changed_when: false
 
     - name: Start Minikube (docker driver)
-      command: minikube start --driver=podman --cpus=2
+      command: minikube start --driver=podman
       when: "'Running' not in minikube_status.stdout"
 
     # deploy kubernetes
