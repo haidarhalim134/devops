@@ -1,25 +1,24 @@
 ---
-- name: Install dependencies and deploy Kubernetes resources to Minikube
-  hosts: localhost
-  connection: local
+- name: Install dependencies and deploy Kubernetes resources to Minikube (VPS)
+  hosts: vps
+  become: true
   gather_facts: true
 
   vars:
-    workdir: "{{ playbook_dir }}"
-    kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
     k8s_dir: "{{ playbook_dir }}/../k8s"
 
-    kubectl_bin: "{{ playbook_dir }}/kubectl"
-    minikube_bin: "{{ playbook_dir }}/minikube"
+    kubectl_bin: /usr/local/bin/kubectl
+    minikube_bin: /usr/local/bin/minikube
+    kubeconfig: /root/.kube/config
 
   tasks:
-    - name: Ensure curl is installed
-      become: true
+    - name: Ensure required packages are installed
       package:
-        name: curl
+        name:
+          - curl
+          - conntrack
         state: present
 
-    # memastikan kubectl sudah terinstall
     - name: Check kubectl exists
       stat:
         path: "{{ kubectl_bin }}"
@@ -32,7 +31,7 @@
         dest: "{{ kubectl_bin }}"
         mode: '0755'
 
-    # memastikan minikube sudah terinstall
+    # setup kubectl
     - name: Check minikube exists
       stat:
         path: "{{ minikube_bin }}"
@@ -45,48 +44,68 @@
         dest: "{{ minikube_bin }}"
         mode: '0755'
 
-    # mulai minikube
-    - name: Start Minikube if not running
-      command: "{{ minikube_bin }} status --format='{% raw %}{{.Host}}{% endraw %}'"
+    # setup podman
+    - name: Check podman exists
+      command: podman --version
+      register: podman_check
+      failed_when: false
+      changed_when: false
+
+    - name: Install podman (if missing)
+      package:
+        name: podman
+        state: present
+      when: podman_check.rc != 0
+
+    - name: Enable podman socket (for compatibility)
+      service:
+        name: podman.socket
+        state: started
+        enabled: true
+      when: podman_check.rc == 0 or podman_check is defined
+
+    # setup minikube
+    - name: Check Minikube status
+      command: minikube status --format='{{ "{{.Host}}" }}'
       register: minikube_status
       failed_when: false
       changed_when: false
 
-    - name: Run Minikube
-      command: "{{ minikube_bin }} start"
+    - name: Start Minikube (docker driver)
+      command: minikube start --driver=podman --cpus=2
       when: "'Running' not in minikube_status.stdout"
 
     # deploy kubernetes
     - name: Apply namespace
-      command: "{{ kubectl_bin }} apply -f {{ k8s_dir }}/namespace.yaml"
+      command: kubectl apply -f {{ k8s_dir }}/namespace.yaml
       environment:
         KUBECONFIG: "{{ kubeconfig }}"
 
     - name: Apply configmap
-      command: "{{ kubectl_bin }} apply -f {{ k8s_dir }}/configmap.yaml"
+      command: kubectl apply -f {{ k8s_dir }}/configmap.yaml
       environment:
         KUBECONFIG: "{{ kubeconfig }}"
 
-    - name: Apply secret (skip if not created yet)
-      command: "{{ kubectl_bin }} apply -f {{ k8s_dir }}/secret.yaml"
+    - name: Apply secret (optional)
+      command: kubectl apply -f {{ k8s_dir }}/secret.yaml
       environment:
         KUBECONFIG: "{{ kubeconfig }}"
       ignore_errors: true
 
     - name: Apply deployment
-      command: "{{ kubectl_bin }} apply -f {{ k8s_dir }}/deployment.yaml"
+      command: kubectl apply -f {{ k8s_dir }}/deployment.yaml
       environment:
         KUBECONFIG: "{{ kubeconfig }}"
 
     - name: Apply service
-      command: "{{ kubectl_bin }} apply -f {{ k8s_dir }}/service.yaml"
+      command: kubectl apply -f {{ k8s_dir }}/service.yaml
       environment:
         KUBECONFIG: "{{ kubeconfig }}"
 
     # verifikasi
     - name: Wait for pods to be ready
       command: >
-        {{ kubectl_bin }} wait
+        kubectl wait
         --for=condition=Ready pod
         --all
         -n tubes-devops
@@ -95,7 +114,6 @@
         KUBECONFIG: "{{ kubeconfig }}"
 
     - name: Show deployed resources
-      command: "{{ kubectl_bin }} get all -n tubes-devops"
+      command: kubectl get all -n tubes-devops
       environment:
         KUBECONFIG: "{{ kubeconfig }}"
- 
