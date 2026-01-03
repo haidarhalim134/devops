@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tubes-devops-deployment
+  namespace: tubes-devops
+  labels:
+    app: tubes-devops
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tubes-devops
+  template:
+    metadata:
+      labels:
+        app: tubes-devops
+    spec:
+      containers:
+        - name: tubes-devops-container
+          image: agoy39/tubes-devops:latest
+          ports:
+          - containerPort: 3000
+            name: http
+          env:
+          - name: JWT_SECRET
+            valueFrom: 
+              secretKeyRef:
+                name: tubes-devops-secret
+                key: JWT_SECRET
+          - name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: tubes-devops-secret
+                key: DATABASE_URL
+          - name: NEXT_PUBLIC_APP_URL
+            valueFrom:
+              configMapKeyRef:
+                name: tubes-devops-config
+                key:  NEXT_PUBLIC_APP_URL
+          - name: PORT
+            value:  "3000"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3

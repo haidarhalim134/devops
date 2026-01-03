@@ -1,21 +1,24 @@
-<<<<<<< HEAD
-import { pgTable, text, timestamp, uuid, varchar, serial,integer, numeric } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  varchar,
+  serial,
+  integer,
+} from "drizzle-orm/pg-core";
 
-=======
-import { pgTable, text, timestamp, uuid, varchar, serial } from "drizzle-orm/pg-core";
-
-// --- Tabel Users (Tetap sama) ---
->>>>>>> b1e0f6aaccbb392f4c87abedf5f3e9d54498830f
+/* ================= USERS ================= */
 export const users = pgTable("users", {
-    id: uuid("id").defaultRandom().primaryKey(),
-    email: text("email").notNull().unique(),
-    passwordHash: text("password_hash").notNull(),
-    name: text("name"),
-    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
-// --- Tabel Jobs (Tetap sama) ---
+/* ================= JOBS ================= */
 export const jobs = pgTable("jobs", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
@@ -30,40 +33,45 @@ export const jobs = pgTable("jobs", {
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = typeof jobs.$inferInsert;
 
-// --- 🚀 PERBAIKAN DI SINI ---
-// Nama variabel 'blogsTable' diubah menjadi 'blogs'
+/* ================= BLOGS ================= */
 export const blogs = pgTable("blogs", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 256 }),
   content: text("content"),
-  author_id: uuid("author_id").references(() => users.id, { onDelete: 'set null' }),
+  author_id: uuid("author_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
   image_url: text("image_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export type Blog = typeof blogs.$inferSelect; // Disesuaikan
-export type NewBlog = typeof blogs.$inferInsert; // Disesuaikan
+export type Blog = typeof blogs.$inferSelect;
+export type NewBlog = typeof blogs.$inferInsert;
 
-
-// --- Tabel Portfolios (Publik, tanpa userId) ---
+/* ================= PORTFOLIOS ================= */
 export const portfoliosTable = pgTable("portfolios", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 256 }).notNull(),
   description: text("description").notNull(),
   image: varchar("image", { length: 256 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
 });
 
+/* ================= CONTACT ================= */
 export const contactMessages = pgTable("contact_messages", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull(),
   message: text("message").notNull(),
-  createdAt: timestamp("created_at").defaultNow()
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
+/* ================= PRODUCTS ================= */
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -75,7 +83,5 @@ export const products = pgTable("products", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export type products = typeof products.$inferSelect;
+export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
-export type Job = typeof jobs.$inferSelect;
-export type NewJob = typeof jobs.$inferInsert;

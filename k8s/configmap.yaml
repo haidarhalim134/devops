@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tubes-devops-config
+  namespace: tubes-devops
+data:
+  NEXT_PUBLIC_APP_URL: "http://localhost:8080"
+  NODE_ENV: "production"
