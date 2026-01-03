@@ -1,0 +1,18 @@
+---
+- name: Stop application and Minikube
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    kubectl_bin: "{{ playbook_dir }}/kubectl"
+    minikube_bin: "{{ playbook_dir }}/minikube"
+
+  tasks:
+    - name: Delete application namespace
+      command: "{{ kubectl_bin }} delete namespace tubes-devops"
+      ignore_errors: true
+
+    - name: Stop Minikube
+      command: "{{ minikube_bin }} stop"
+      ignore_errors: true

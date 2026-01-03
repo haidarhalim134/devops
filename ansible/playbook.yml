@@ -1,0 +1,101 @@
+---
+- name: Install dependencies and deploy Kubernetes resources to Minikube
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    workdir: "{{ playbook_dir }}"
+    kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+    k8s_dir: "{{ playbook_dir }}/../k8s"
+
+    kubectl_bin: "{{ playbook_dir }}/kubectl"
+    minikube_bin: "{{ playbook_dir }}/minikube"
+
+  tasks:
+    - name: Ensure curl is installed
+      become: true
+      package:
+        name: curl
+        state: present
+
+    # memastikan kubectl sudah terinstall
+    - name: Check kubectl exists
+      stat:
+        path: "{{ kubectl_bin }}"
+      register: kubectl_stat
+
+    - name: Download kubectl if missing
+      when: not kubectl_stat.stat.exists
+      get_url:
+        url: https://dl.k8s.io/release/v1.35.0/bin/linux/amd64/kubectl
+        dest: "{{ kubectl_bin }}"
+        mode: '0755'
+
+    # memastikan minikube sudah terinstall
+    - name: Check minikube exists
+      stat:
+        path: "{{ minikube_bin }}"
+      register: minikube_stat
+
+    - name: Download minikube if missing
+      when: not minikube_stat.stat.exists
+      get_url:
+        url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        dest: "{{ minikube_bin }}"
+        mode: '0755'
+
+    # mulai minikube
+    - name: Start Minikube if not running
+      command: "{{ minikube_bin }} status --format='{% raw %}{{.Host}}{% endraw %}'"
+      register: minikube_status
+      failed_when: false
+      changed_when: false
+
+    - name: Run Minikube
+      command: "{{ minikube_bin }} start"
+      when: "'Running' not in minikube_status.stdout"
+
+    # deploy kubernetes
+    - name: Apply namespace
+      command: "{{ kubectl_bin }} apply -f {{ k8s_dir }}/namespace.yaml"
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+
+    - name: Apply configmap
+      command: "{{ kubectl_bin }} apply -f {{ k8s_dir }}/configmap.yaml"
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+
+    - name: Apply secret (skip if not created yet)
+      command: "{{ kubectl_bin }} apply -f {{ k8s_dir }}/secret.yaml"
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      ignore_errors: true
+
+    - name: Apply deployment
+      command: "{{ kubectl_bin }} apply -f {{ k8s_dir }}/deployment.yaml"
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+
+    - name: Apply service
+      command: "{{ kubectl_bin }} apply -f {{ k8s_dir }}/service.yaml"
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+
+    # verifikasi
+    - name: Wait for pods to be ready
+      command: >
+        {{ kubectl_bin }} wait
+        --for=condition=Ready pod
+        --all
+        -n tubes-devops
+        --timeout=120s
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+
+    - name: Show deployed resources
+      command: "{{ kubectl_bin }} get all -n tubes-devops"
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+ 
